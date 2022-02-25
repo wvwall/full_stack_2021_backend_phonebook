@@ -23,10 +23,22 @@ let persons = [
     name: "Mary Poppendieck",
     number: "39-23-6423122",
   },
+  {
+    id: 5,
+    name: "Walter",
+    number: "39-23-6423122",
+  },
 ];
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello Walter!</h1>");
+});
+
+app.get("/info", (request, response) => {
+  nPerson = persons.length;
+  date = new Date();
+  response.send(`<h2>Phonebook has info ${nPerson} people</h2>
+  <p>${date}</p`);
 });
 
 app.use(express.json()); //The json-parser functions so that it takes the JSON data of a request, transforms it into a JavaScript object and then attaches it to the body property of the request object before the route handler is called.
@@ -46,7 +58,7 @@ app.get("/api/persons/:id", (request, response) => {
   if (person) {
     response.json(person);
   } else {
-    response.status(404).send("<h1>Questa nota non esiste.</h1>").end();
+    response.status(404).send("<h1>Questo contatto non esiste.</h1>").end();
   }
   console.log(person);
   response.json(person);
@@ -70,17 +82,24 @@ const generateId = () => {
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
-  if (!body.content) {
-    return response.status(400).json({
-      errore: "content missing",
+  persons.filter((person) => {
+    if (person.name === body.name) {
+      return response.status(400).send("<h1>name must be unique</h1>").json({
+        errore: "name must be unique",
+      });
+    }
+  });
+
+  if (!body.name || !body.number) {
+    return response.status(400).send("<h1>name or number missing</h1>").json({
+      errore: "name or number missing",
     });
   }
 
   const person = {
-    content: body.content,
-    important: body.important || false,
-    date: new Date(),
     id: generateId(),
+    name: body.name,
+    number: body.number,
   };
 
   persons = persons.concat(person);
